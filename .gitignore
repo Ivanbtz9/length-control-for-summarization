@@ -169,3 +169,17 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+#model weights
+models_checkpoints/
+
+# data set load localy
+data/
+
+# config folder of the IDE editor 
+.vscode/
+.idea/
+
+#logs
+logs/
+log/
