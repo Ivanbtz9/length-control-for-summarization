@@ -175,6 +175,7 @@ models_checkpoints/
 
 # data set load localy
 data/
+*.csv
 
 # config folder of the IDE editor 
 .vscode/
