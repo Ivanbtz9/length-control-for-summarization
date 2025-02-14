@@ -20,7 +20,7 @@ from transformers import AutoTokenizer, BartForConditionalGeneration
 
 ### CONFIG ###
 
-path_to_save = 'data/cnn_dailymail'
+path_to_save = '/LAB-DATA/GLiCID/users/ibotca@univ-angers.fr/datasets/cnn_dailymail'
 
 NUM_PROCS = os.cpu_count() 
 

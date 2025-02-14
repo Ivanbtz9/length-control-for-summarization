@@ -1,0 +1,5 @@
+## lancer une bash avec une connexion à un noeud de calcul GPU
+srun --cluster=nautilus --qos=quick --partition=gpu --gres=gpu:1 --cpus-per-task=8 --pty bash
+
+## lancer un script slurm 
+sbatch -M "cluster_name" launcher.slurm
