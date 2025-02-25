@@ -9,18 +9,13 @@ import torch
 from datasets import load_dataset
 from datasets import load_from_disk
 
-from torch.nn.utils.rnn import pad_sequence
-from torch.utils.data import DataLoader
-
-# Load the ROUGE metric
-import evaluate
-
 from transformers import AutoTokenizer, BartForConditionalGeneration
 
 
 ### CONFIG ###
 
-path_to_save = '/LAB-DATA/GLiCID/users/ibotca@univ-angers.fr/datasets/cnn_dailymail'
+path_to_save_test = '/LAB-DATA/GLiCID/users/ibotca@univ-angers.fr/datasets/cnn_dailymail_test'
+path_to_save_eval = '/LAB-DATA/GLiCID/users/ibotca@univ-angers.fr/datasets/cnn_dailymail_eval'
 
 NUM_PROCS = os.cpu_count() 
 
@@ -42,9 +37,6 @@ model = BartForConditionalGeneration.from_pretrained(MODEL_HUB)
 print("max_position_embeddings = " , model.config.max_position_embeddings) 
 
 del model
-
-# Load dataset (e.g., CNN/DailyMail)
-dataset = load_dataset("cnn_dailymail", "3.0.0", split='train')
 
 
 def len_distrib(batch):
@@ -74,6 +66,15 @@ def len_distrib(batch):
 
 
 
+# Load dataset (e.g., CNN/DailyMail)
+dataset = load_dataset("cnn_dailymail", "3.0.0", split='test')
 dataset = dataset.map(len_distrib,num_proc=NUM_PROCS,batched=True,batch_size=64)# Save the Hugging Face dataset
-dataset.save_to_disk(path_to_save)
-print("Dataset saved successfully.")
+dataset.save_to_disk(path_to_save_test)
+print(f"Dataset saved successfully. to {path_to_save_test}")
+
+del dataset
+
+dataset = load_dataset("cnn_dailymail", "3.0.0", split='validation')
+dataset = dataset.map(len_distrib,num_proc=NUM_PROCS,batched=True,batch_size=64)# Save the Hugging Face dataset
+dataset.save_to_disk(path_to_save_eval)
+print(f"Dataset saved successfully. to {path_to_save_eval}")

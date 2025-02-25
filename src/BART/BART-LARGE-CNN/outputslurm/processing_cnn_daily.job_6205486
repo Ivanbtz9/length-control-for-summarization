@@ -1,0 +1,4 @@
+NUM_PROCS =  96
+device =  cuda
+max_position_embeddings =  1024
+Dataset saved successfully.

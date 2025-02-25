@@ -3,3 +3,7 @@ srun --cluster=nautilus --qos=quick --partition=gpu --gres=gpu:1 --cpus-per-task
 
 ## lancer un script slurm 
 sbatch -M "cluster_name" launcher.slurm
+
+
+##link for a slurm documentation :
+https://dce.pages.centralesupelec.fr/06_slurm_jobs_management/

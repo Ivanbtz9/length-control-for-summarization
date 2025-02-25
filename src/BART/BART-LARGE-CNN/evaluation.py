@@ -5,6 +5,7 @@ import tqdm
 import csv
 import numpy as np
 import pandas as pd
+import json
 import torch
 
 from datasets import load_dataset
@@ -21,11 +22,43 @@ from transformers import AutoTokenizer, BartForConditionalGeneration
 
 ### CONFIG ###
 
-path_to_load = 'data/cnn_dailymail'
+# Load configuration from JSON
+with open('./config.json', 'r') as f:
+    config = json.load(f)
+
+# Assign values from config (with defaults to avoid crashes if a key is missing)
+SEED = config.get("SEED", 0)  # Random seed
+NUM_LOADER = config.get("NUM_LOADER", 50)  # Number of threads
+max_len = config.get("max_len", 1024)  # Max input length for encoder
+BATCH_SIZE = config.get("BATCH_SIZE", 64)
+NUM_BEAM = config.get("NUM_BEAM", 5)
+max_len_resume = config.get("max_len_resume", 200)  # Max summary length
+repetition_penalty = config.get("repetition_penalty", 2.0)  # Penalty for repetitive text
+length_penalty = config.get("length_penalty", 1.0)  # Length penalty in beam search
+early_stopping = config.get("early_stopping", True)  # Stop decoding early
+
+job_nb = sys.argv[1]
+path_to_load =  sys.argv[2] #'/LAB-DATA/GLiCID/users/ibotca@univ-angers.fr/datasets/cnn_dailymail_train'
+
+# Create a directory for storing results
+results_dir = f"./results_{job_nb}"  # Ensure correct naming
+os.makedirs(results_dir, exist_ok=True)
+
+# Save configuration to the correct directory
+config_path = os.path.join(results_dir, "config.json")
+with open(config_path, 'w') as f:
+    json.dump(config, f, indent=4)
+
+print(f"Configuration saved to {config_path}")
+
+# Set random seeds and deterministic pytorch for reproducibility
+torch.manual_seed(SEED) # pytorch random seed
+np.random.seed(SEED) # numpy random seed
+torch.backends.cudnn.deterministic = True
+
+
 
 NUM_PROCS = os.cpu_count() 
-NUM_LOADER = 32 #depends of the number of thread 
-
 print("NUM_PROCS = " ,NUM_PROCS)
 
 MODEL_HUB = "facebook/bart-large-cnn"
@@ -33,17 +66,6 @@ MODEL_HUB = "facebook/bart-large-cnn"
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print("device = " , device)
 
-max_len = 1024 # max embedding number for the encoder part
-
-BATCH_SIZE =64
-
-NUM_BEAM = 5
-
-max_len_resume = 200 # With data visualisation associated
-
-repetition_penalty=2.0 # Can be discussed
-length_penalty=1.0 # Can be discussed
-early_stopping=True # Can be discussed
 
 ### Load model ###
 
@@ -55,6 +77,7 @@ print("max_position_embeddings = " , model.config.max_position_embeddings)
 
 # Load dataset (e.g., CNN/DailyMail)
 dataset = load_from_disk(path_to_load)
+#dataset = dataset.select(list(range(100))) #selecte a sample
 
 
 
@@ -124,12 +147,12 @@ loader = DataLoader(dataset, **params)
 rouge = evaluate.load('rouge')
 
 
-with open('./rouge.csv', 'w', newline='') as file:
+with open(f'./results_{job_nb}/rouge.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     field = ["rouge1", "rouge2", "rougeL"]
     writer.writerow(field)
 
-with open('./len.csv', 'w', newline='') as file:
+with open(f'./results_{job_nb}/len.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     field = ["id", "input_len", "target_len", "generate_len"]
     writer.writerow(field)
@@ -140,7 +163,7 @@ model.to(device)
 rouge1_score, rouge2_score , rougeL_score = 0, 0, 0
 nb_sample = 0
 
-exclude_ids = torch.tensor([0, 1, 2, 3, 50264]).to(device)
+exclude_ids = torch.tensor([0, 1, 2, 3, 50264]).to(device) #spécial token to skip
 
 with torch.no_grad():
     
@@ -166,15 +189,15 @@ with torch.no_grad():
         mask = ~torch.isin(generated_ids, exclude_ids) #mask to skip the special tokens 
         generate_len = mask.sum(dim=1)  
 
-        with open('./len.csv', 'a', newline='') as file:
+        with open(f'./results_{job_nb}/len.csv', 'a', newline='') as file:
             writer = csv.writer(file)
-            writer.writerows([[batch["id"][i], batch["input_len"][i], batch["target_len"][i], generate_len[i].item()] for i in range(BATCH_SIZE)])
+            writer.writerows([[batch["id"][i], batch["input_len"][i], batch["target_len"][i], generate_len[i].item()] for i in range(len(batch))])       
 
         # Compute ROUGE scores here
         rouge_results = rouge.compute(predictions=generated_txt, references=batch["highlights"])
         
         
-        with open('./rouge.csv', 'a', newline='') as file:
+        with open(f'./results_{job_nb}/rouge.csv', 'a', newline='') as file:
             writer = csv.writer(file)
             writer.writerow([rouge_results['rouge1'], rouge_results['rouge2'], rouge_results['rougeL']])
 
@@ -184,7 +207,7 @@ with torch.no_grad():
 
         nb_sample+=1
 
-with open('./rouge_total.csv', 'w', newline='') as file:
+with open(f'./results_{job_nb}/rouge_total.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     field = ["Total_rouge1", "Total_rouge2", "Total_rougeL"]
     writer.writerow(field)
