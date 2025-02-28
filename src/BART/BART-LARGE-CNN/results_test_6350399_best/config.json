@@ -2,10 +2,10 @@
     "SEED": 42,
     "NUM_LOADER": 50,
     "max_len": 1024,
-    "BATCH_SIZE": 32,
-    "NUM_BEAM": 6,
-    "max_len_resume": 180,
+    "BATCH_SIZE": 64,
+    "NUM_BEAM": 4,
+    "max_len_resume": 140,
     "repetition_penalty": 1.0,
-    "length_penalty": 2.5,
+    "length_penalty": 2.0,
     "early_stopping": true
 }
