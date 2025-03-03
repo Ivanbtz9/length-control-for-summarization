@@ -1,0 +1,14 @@
+{
+    "SEED": 42,
+    "NUM_LOADER": 50,
+    "max_len": 1024,
+    "BATCH_SIZE": 16,
+    "NUM_BEAM": 4,
+    "min_len_resume": 14,
+    "max_len_resume": 159,
+    "no_repeat_ngram_size": 3,
+    "repetition_penalty": 1.5,
+    "length_penalty": 2,
+    "early_stopping": true,
+    "use_cache": false
+}
