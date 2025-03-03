@@ -1,3 +1,5 @@
+
+
 ### MODULES ###
 
 import sys,os
@@ -246,7 +248,7 @@ with torch.no_grad():
         rougeL_score += rouge_results['rougeL']* min_len
 
         nb_sample+=  min_len
-        break
+       
 
 with open(f'./results_{job_nb}/rouge_total.csv', 'w', newline='') as file:
     writer = csv.writer(file)
