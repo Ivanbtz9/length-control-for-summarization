@@ -109,9 +109,7 @@ def len_distrib(batch):
         'target_len': len_highlights
         }
 
-
 dataset = dataset.map(len_distrib,num_proc=NUM_PROCS,batched=True,batch_size=64)# Save the Hugging Face dataset
-
 
 # Define the custom collate function
 def collate_fn(batch):
@@ -149,8 +147,7 @@ def collate_fn(batch):
 
     highlights = [item['highlights'] for item in batch]
 
-    
-    
+
 
     return {
         'id':id,
@@ -175,25 +172,25 @@ params = {
 # Return batch of data
 loader = DataLoader(dataset, **params)
 
-# Return acurate score
-rouge = evaluate.load('rouge')
+# # Return acurate score
+# rouge = evaluate.load('rouge')
 
 
-with open(f'./results_{job_nb}/rouge.csv', 'w', newline='') as file:
+# with open(f'./results_{job_nb}/rouge.csv', 'w', newline='') as file:
+#     writer = csv.writer(file)
+#     field = ["rouge1", "rouge2", "rougeL"]
+#     writer.writerow(field)
+
+with open(f'./results_{job_nb}/len_and_txt.csv', 'w', newline='') as file:
     writer = csv.writer(file)
-    field = ["rouge1", "rouge2", "rougeL"]
-    writer.writerow(field)
-
-with open(f'./results_{job_nb}/len.csv', 'w', newline='') as file:
-    writer = csv.writer(file)
-    field = ["id", "input_len", "target_len", "generate_len"]
+    field = ["id", "input_len", "target_len", "generate_len", "references_txt", "generated_txt"]
     writer.writerow(field)
 
 model.eval()
 model.to(device)
 
-rouge1_score, rouge2_score , rougeL_score = 0, 0, 0
-nb_sample = 0
+# rouge1_score, rouge2_score , rougeL_score = 0, 0, 0
+# nb_sample = 0
 
 exclude_ids = torch.tensor([0, 1, 2, 3, 50264]).to(device) #spécial token to skip
 
@@ -219,39 +216,41 @@ with torch.no_grad():
         mask = ~torch.isin(generated_ids, exclude_ids) #mask to skip the special tokens 
         generate_len = mask.sum(dim=1)  
 
-        with open(f'./results_{job_nb}/len.csv', 'a', newline='') as file:
+        generated_txt = [text for text in tokenizer.batch_decode(generated_ids, skip_special_tokens=True)] #.lower().strip() 
+        references = [ref for ref in batch["highlights"]] #.lower().strip() 
+
+        with open(f'./results_{job_nb}/len_and_txt.csv', 'a', newline='') as file:
             writer = csv.writer(file)
     
             min_len = min(len(batch["id"]), len(generate_len))
 
             for i in range(min_len):
                 try:
-                    writer.writerow([batch["id"][i], batch["input_len"][i], batch["target_len"][i], generate_len[i].item()])
+                    writer.writerow([batch["id"][i], batch["input_len"][i], batch["target_len"][i], generate_len[i].item(),references[i],generated_txt[i]])
                 except Exception as e:
                     print(f"Error writing row {i}: {e}")
                     
         # Compute ROUGE scores here
-        generated_txt = [text.lower().strip() for text in tokenizer.batch_decode(generated_ids, skip_special_tokens=True)]
-        references = [ref.lower().strip() for ref in batch["highlights"]]
-        rouge_results = rouge.compute(predictions=generated_txt,
-                                      references=references,
-                                      use_stemmer=True  # Ensures correct ROUGE comparison
-                                      )
+        
+        # rouge_results = rouge.compute(predictions=generated_txt,
+        #                               references=references,
+        #                               use_stemmer=True  # Ensures correct ROUGE comparison
+        #                               )
         
         
-        with open(f'./results_{job_nb}/rouge.csv', 'a', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow([rouge_results['rouge1'], rouge_results['rouge2'], rouge_results['rougeL']])
+        # with open(f'./results_{job_nb}/rouge.csv', 'a', newline='') as file:
+        #     writer = csv.writer(file)
+        #     writer.writerow([rouge_results['rouge1'], rouge_results['rouge2'], rouge_results['rougeL']])
 
-        rouge1_score += rouge_results['rouge1']* min_len
-        rouge2_score += rouge_results['rouge2']* min_len
-        rougeL_score += rouge_results['rougeL']* min_len
+        # rouge1_score += rouge_results['rouge1']* min_len
+        # rouge2_score += rouge_results['rouge2']* min_len
+        # rougeL_score += rouge_results['rougeL']* min_len
 
-        nb_sample += min_len
+        # nb_sample += min_len
        
 
-with open(f'./results_{job_nb}/rouge_total.csv', 'w', newline='') as file:
-    writer = csv.writer(file)
-    field = ["Total_rouge1", "Total_rouge2", "Total_rougeL"]
-    writer.writerow(field)
-    writer.writerow([rouge1_score/nb_sample, rouge2_score/nb_sample, rougeL_score/nb_sample])
+# with open(f'./results_{job_nb}/rouge_total.csv', 'w', newline='') as file:
+#     writer = csv.writer(file)
+#     field = ["Total_rouge1", "Total_rouge2", "Total_rougeL"]
+#     writer.writerow(field)
+#     writer.writerow([rouge1_score/nb_sample, rouge2_score/nb_sample, rougeL_score/nb_sample])

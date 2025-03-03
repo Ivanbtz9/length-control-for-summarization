@@ -34,5 +34,6 @@ nvidia-smi || { echo "No GPU detected"; exit 1; }
 path_to_load='/LAB-DATA/GLiCID/users/ibotca@univ-angers.fr/datasets/cnn_dailymail_test'
 
 # Programme à exécuter
-srun python CNN_processing_and_evaluation.py $SLURM_JOB_ID $path_to_load
+srun python CNN_processing_generate_and_save_result.py $SLURM_JOB_ID $path_to_load 
 
+#CNN_processing_and_evaluation.py

@@ -3,6 +3,11 @@
         "SEED": 42,
         "NUM_LOADER": 50
     },
+    "config_model":{
+        "MODEL_TYPE" : "bart",
+        "MODEL_NAME" : "bart-large",
+        "MODEL_HUB" : "facebook/bart-large"
+    },
     "config_generate":{
         "NUM_BEAM": 4,
         "min_len_resume": 14,
@@ -15,6 +20,12 @@
     },
     "config_training":{
         "max_len": 1024,
-        "BATCH_SIZE": 16
+        "TRAIN_BATCH_SIZE" : 2,
+        "VALID_BATCH_SIZE" : 2,
+        "LEARNING_RATE" : 1e-4,
+        "NB_EPOCHS" : 15,
+        "early_stopping_patience" : 5,
+        "reduce_lr_patience" : 2,
+        "reduce_lr_factor" : 0.1
     }
 }
