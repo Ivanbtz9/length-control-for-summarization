@@ -49,7 +49,7 @@ torch.backends.cudnn.deterministic = True
 job_nb = sys.argv[1]
 
 # Create a directory for storing results
-results_dir = f"./results_evaluation_{job_nb}"  # Ensure correct naming
+results_dir = f"./results_evaluation_sans_finetuning{job_nb}"  # Ensure correct naming
 os.makedirs(results_dir, exist_ok=True)
 
 # Save configuration to the correct directory
