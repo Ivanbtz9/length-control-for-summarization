@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #SBATCH --job-name=finetune_bart_large_cnn_single_gpu                                   # job name
-#SBATCH --output=./outputslurm/%x_job_%j                        # output logs
-#SBATCH --error=./outputslurm/%x_job_%j.err                     # error logs
+#SBATCH --output=./outputslurm/job_%j/%x                       # output logs
+#SBATCH --error=./outputslurm/job_%j/%x.err                     # error logs
 #SBATCH --qos=medium
 #SBATCH --time=2-20:00:00                                       # maximum wall time allocated for the job (D-H:MM:SS)
 

@@ -2,12 +2,12 @@
 
 import sys,os
 import tqdm
+import shutil
 import csv
 from datetime import datetime 
 import numpy as np
 import pandas as pd
 import json
-
 
 from datasets import load_dataset
 
@@ -44,13 +44,26 @@ with open('./config_finetune_bart_large.json', 'r') as f:
     print(type(config))
 
 # Create a directory for storing results
-results_dir = f"./finetuning_BART_large-{job_nb}"  # Ensure correct naming
+results_dir = f"./config_and_code/finetuning_BART_large-{time}-{job_nb}"  # Ensure correct naming
 os.makedirs(results_dir, exist_ok=True)
 
 # Save configuration to the correct directory
 config_path = os.path.join(results_dir, "config.json")
 with open(config_path, 'w') as f:
     json.dump(config, f, indent=4)
+
+
+# Define source and destination paths
+save_code_path = os.path.join(results_dir, os.path.basename(sys.argv[0]))
+current_code_path = os.path.join(os.getcwd(), sys.argv[0])
+
+try:
+    # Copy the current script to results_dir
+    shutil.copy(current_code_path, save_code_path)
+    print(f"Successfully saved a copy of the script to: {save_code_path}")
+except Exception as e:
+    print(f"Error copying the script: {e}")
+
 
 print(f"Configuration saved to {config_path}")
 

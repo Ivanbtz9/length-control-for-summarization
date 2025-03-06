@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #SBATCH --job-name=evaluation                                   # job name
-#SBATCH --output=./outputslurm/%x_job_%j                        # output logs
-#SBATCH --error=./outputslurm/%x_job_%j.err                     # error logs
+#SBATCH --output=./outputslurm/job_%j/%x                       # output logs
+#SBATCH --error=./outputslurm/job_%j/%x.err                     # error logs
 #SBATCH --qos=short
 #SBATCH --time=20:00:00                                       # maximum wall time allocated for the job (D-H:MM:SS)
 
