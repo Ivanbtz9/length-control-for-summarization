@@ -8,6 +8,8 @@ import pandas as pd
 import json
 import torch
 
+from datasets import load_dataset
+
 # Load the ROUGE metric
 import evaluate
 
@@ -39,74 +41,33 @@ print("NUM_PROCS = " ,NUM_PROCS)
 rouge = evaluate.load('rouge')
 
 
-with open(f'./results_6419201_len_and_txt/rouge.csv', 'w', newline='') as file:
-    writer = csv.writer(file)
-    field = ["rouge1", "rouge2", "rougeL", "rougeLsum"]
-    writer.writerow(field)
+dataset = load_dataset("csv", data_files="./results_6419201_len_and_txt/len_and_txt.csv")["train"]
+
+# Define the evaluation function
+def evaluation(examples):
+    """
+    Compute ROUGE scores for a batch of generated texts.
+    """
+    generated_txt = examples["generated_txt"]  # List of generated summaries
+    references = examples["references_txt"]  # List of reference summaries
+
+    # Ensure lists have the same length
+    if len(generated_txt) != len(references):
+        raise ValueError(f"Mismatch in number of predictions ({len(generated_txt)}) and references ({len(references)})")
+
+    # Compute ROUGE scores
+    rouge_results = rouge.compute(
+        predictions=generated_txt,
+        references=references,
+        use_stemmer=True
+    )
+
+    # Convert scalar values to lists
+    return {key: [value] * len(generated_txt) for key, value in rouge_results.items()}
 
 
-rouge1_score, rouge2_score , rougeL_score = 0, 0, 0
-nb_sample = 0
+# Apply evaluation with batch processing
+dataset = dataset.map(evaluation, batched=True,batch_size=1,num_proc=NUM_PROCS)
 
-exclude_ids = torch.tensor([0, 1, 2, 3, 50264]).to(device) #spécial token to skip
-
-with torch.no_grad():
-    
-    for _, batch in tqdm.tqdm(enumerate(loader, 0),desc=f'total iter: {len(loader)}', unit=" iter"):
-        
-
-        generated_ids = model.generate(
-              input_ids = batch["input_ids"].to(device),
-              attention_mask = batch["attention_mask"].to(device), 
-              max_length=max_len_resume, 
-              num_beams=NUM_BEAM,
-              repetition_penalty=repetition_penalty, 
-              length_penalty=length_penalty, 
-              early_stopping=early_stopping
-              )   
-        #print(generated_ids)
-
-        
-
-
-        #print(generated_txt)
-        #print(type(generated_txt))
-
-        mask = ~torch.isin(generated_ids, exclude_ids) #mask to skip the special tokens 
-        generate_len = mask.sum(dim=1)  
-
-        with open(f'./results_{job_nb}/len.csv', 'a', newline='') as file:
-            writer = csv.writer(file)
-    
-            min_len = min(len(batch["id"]), len(generate_len))
-
-            for i in range(min_len):
-                try:
-                    writer.writerow([batch["id"][i], batch["input_len"][i], batch["target_len"][i], generate_len[i].item()])
-                except Exception as e:
-                    print(f"Error writing row {i}: {e}")
-                    
-        # Compute ROUGE scores here
-        generated_txt = [text.lower().strip() for text in tokenizer.batch_decode(generated_ids, skip_special_tokens=True)]
-        references = [ref.lower().strip() for ref in batch["highlights"]]
-        rouge_results = rouge.compute(predictions=generated_txt,
-                                      references=references,
-                                      use_stemmer=True  # Ensures correct ROUGE comparison
-                                      )
-        
-        
-        with open(f'./results_{job_nb}/rouge.csv', 'a', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow([rouge_results['rouge1'], rouge_results['rouge2'], rouge_results['rougeL']])
-
-        rouge1_score += rouge_results['rouge1']* min_len
-        rouge2_score += rouge_results['rouge2']* min_len
-        rougeL_score += rouge_results['rougeL']* min_len
-
-        nb_sample+=  min_len
-
-with open(f'./results_{job_nb}/rouge_total.csv', 'w', newline='') as file:
-    writer = csv.writer(file)
-    field = ["Total_rouge1", "Total_rouge2", "Total_rougeL"]
-    writer.writerow(field)
-    writer.writerow([rouge1_score/nb_sample, rouge2_score/nb_sample, rougeL_score/nb_sample])
+dataset.to_pandas()[['id','rouge1', 'rouge2', 'rougeL', 'rougeLsum']].to_csv("./results_6419201_len_and_txt/rouge.csv",index=False)
+pd.DataFrame(dataset.to_pandas()[['rouge1', 'rouge2', 'rougeL', 'rougeLsum']].mean(axis=0)).transpose().to_csv("./results_6419201_len_and_txt/total_rouge.csv",index=False)
