@@ -1,0 +1,47 @@
+Thu Mar  6 13:16:58 2025       
++---------------------------------------------------------------------------------------+
+| NVIDIA-SMI 530.30.02              Driver Version: 530.30.02    CUDA Version: 12.1     |
+|-----------------------------------------+----------------------+----------------------+
+| GPU  Name                  Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf            Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                                         |                      |               MIG M. |
+|=========================================+======================+======================|
+|   0  NVIDIA A100 80GB PCIe           On | 00000000:05:00.0 Off |                    0 |
+| N/A   34C    P0               55W / 300W|      0MiB / 81920MiB |      0%      Default |
+|                                         |                      |             Disabled |
++-----------------------------------------+----------------------+----------------------+
+                                                                                         
++---------------------------------------------------------------------------------------+
+| Processes:                                                                            |
+|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+|        ID   ID                                                             Usage      |
+|=======================================================================================|
+|  No running processes found                                                           |
++---------------------------------------------------------------------------------------+
+NUM_PROCS =  96
+cuda
+{'config_machine': {'SEED': 42, 'NUM_LOADER': 50, 'BATCH_SIZE': 64}, 'config_model': {'MODEL_TYPE': 'bart', 'MODEL_NAME': 'bart-large', 'MODEL_HUB': 'facebook/bart-large'}, 'config_generate': {'num_beams': 4, 'min_length': 14, 'max_length': 200, 'no_repeat_ngram_size': 3, 'repetition_penalty': 1.5, 'length_penalty': 2, 'early_stopping': True, 'use_cache': False}, 'config_training': {'max_len': 1024, 'TRAIN_BATCH_SIZE': 12, 'VALID_BATCH_SIZE': 12, 'LEARNING_RATE': 0.0001, 'weight_decay': 0.01, 'NB_EPOCHS': 5, 'early_stopping_patience': 2, 'reduce_lr_patience': 1, 'reduce_lr_factor': 0.1}}
+<class 'dict'>
+Successfully saved a copy of the script to: ./config_and_code/finetuning_BART_large-2025-03-06_13h18-6464214/finetune_bart_large_cnn_single_gpu.py
+Configuration saved to ./config_and_code/finetuning_BART_large-2025-03-06_13h18-6464214/config.json
+DatasetDict({
+    train: Dataset({
+        features: ['article', 'highlights', 'id'],
+        num_rows: 287113
+    })
+    validation: Dataset({
+        features: ['article', 'highlights', 'id'],
+        num_rows: 13368
+    })
+    test: Dataset({
+        features: ['article', 'highlights', 'id'],
+        num_rows: 11490
+    })
+})
+1024
+<class 'transformers.models.bart.tokenization_bart_fast.BartTokenizerFast'>
+<class 'transformers.models.bart.modeling_bart.BartForConditionalGeneration'>
+Find a better model at the epoch 1 - Train Loss: 2.5311, eval Loss: 3.4875
+Early stopping triggered
+current_lr :  0.0001
+epoch_best :  1

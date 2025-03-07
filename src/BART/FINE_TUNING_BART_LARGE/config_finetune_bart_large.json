@@ -21,13 +21,13 @@
     },
     "config_training":{
         "max_len": 1024,
-        "TRAIN_BATCH_SIZE" : 12,
-        "VALID_BATCH_SIZE" : 12,
-        "LEARNING_RATE" : 1e-4,
+        "TRAIN_BATCH_SIZE" : 24,
+        "VALID_BATCH_SIZE" : 24,
+        "LEARNING_RATE" : 1e-5,
         "weight_decay":1e-2,
         "NB_EPOCHS" : 5,
-        "early_stopping_patience" : 2,
-        "reduce_lr_patience" : 1,
+        "early_stopping_patience" : 3,
+        "reduce_lr_patience" : 2,
         "reduce_lr_factor" : 0.1
     }
 }

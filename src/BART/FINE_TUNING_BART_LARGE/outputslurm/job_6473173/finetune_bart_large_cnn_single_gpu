@@ -1,4 +1,4 @@
-Tue Mar  4 19:12:24 2025       
+Fri Mar  7 12:44:03 2025       
 +---------------------------------------------------------------------------------------+
 | NVIDIA-SMI 530.30.02              Driver Version: 530.30.02    CUDA Version: 12.1     |
 |-----------------------------------------+----------------------+----------------------+
@@ -6,8 +6,8 @@ Tue Mar  4 19:12:24 2025
 | Fan  Temp  Perf            Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
 |                                         |                      |               MIG M. |
 |=========================================+======================+======================|
-|   0  NVIDIA A100 80GB PCIe           On | 00000000:06:00.0 Off |                    0 |
-| N/A   34C    P0               53W / 300W|      2MiB / 81920MiB |      0%      Default |
+|   0  NVIDIA A100 80GB PCIe           On | 00000000:05:00.0 Off |                    0 |
+| N/A   33C    P0               54W / 300W|      0MiB / 81920MiB |      0%      Default |
 |                                         |                      |             Disabled |
 +-----------------------------------------+----------------------+----------------------+
                                                                                          
@@ -20,9 +20,10 @@ Tue Mar  4 19:12:24 2025
 +---------------------------------------------------------------------------------------+
 NUM_PROCS =  96
 cuda
-{'config_machine': {'SEED': 42, 'NUM_LOADER': 50, 'BATCH_SIZE': 64}, 'config_model': {'MODEL_TYPE': 'bart', 'MODEL_NAME': 'bart-large', 'MODEL_HUB': 'facebook/bart-large'}, 'config_generate': {'num_beams': 4, 'min_length': 14, 'max_length': 200, 'no_repeat_ngram_size': 3, 'repetition_penalty': 1.5, 'length_penalty': 2, 'early_stopping': True, 'use_cache': False}, 'config_training': {'max_len': 1024, 'TRAIN_BATCH_SIZE': 12, 'VALID_BATCH_SIZE': 12, 'LEARNING_RATE': 0.0001, 'weight_decay': 0.01, 'NB_EPOCHS': 5, 'early_stopping_patience': 2, 'reduce_lr_patience': 1, 'reduce_lr_factor': 0.1}}
+{'config_machine': {'SEED': 42, 'NUM_LOADER': 50, 'BATCH_SIZE': 64}, 'config_model': {'MODEL_TYPE': 'bart', 'MODEL_NAME': 'bart-large', 'MODEL_HUB': 'facebook/bart-large'}, 'config_generate': {'num_beams': 4, 'min_length': 14, 'max_length': 200, 'no_repeat_ngram_size': 3, 'repetition_penalty': 1.5, 'length_penalty': 2, 'early_stopping': True, 'use_cache': False}, 'config_training': {'max_len': 1024, 'TRAIN_BATCH_SIZE': 24, 'VALID_BATCH_SIZE': 24, 'LEARNING_RATE': 1e-05, 'weight_decay': 0.01, 'NB_EPOCHS': 5, 'early_stopping_patience': 3, 'reduce_lr_patience': 2, 'reduce_lr_factor': 0.1}}
 <class 'dict'>
-Configuration saved to ./finetuning_BART_large-6431231/config.json
+Successfully saved a copy of the script to: ./config_and_code/finetuning_BART_large-2025-03-07_12h44-6473173/finetune_bart_large_cnn_single_gpu.py
+Configuration saved to ./config_and_code/finetuning_BART_large-2025-03-07_12h44-6473173/config.json
 DatasetDict({
     train: Dataset({
         features: ['article', 'highlights', 'id'],
@@ -40,4 +41,3 @@ DatasetDict({
 1024
 <class 'transformers.models.bart.tokenization_bart_fast.BartTokenizerFast'>
 <class 'transformers.models.bart.modeling_bart.BartForConditionalGeneration'>
-Find a better model at the epoch 1 - Train Loss: 2.8559, eval Loss: 3.4243

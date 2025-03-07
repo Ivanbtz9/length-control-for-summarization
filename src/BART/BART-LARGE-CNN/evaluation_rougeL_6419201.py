@@ -12,6 +12,7 @@ from datasets import load_dataset
 
 # Load the ROUGE metric
 import evaluate
+from rouge_score import rouge_scorer
 
 ### CONFIG ###
 
@@ -30,8 +31,6 @@ repetition_penalty = config.get("repetition_penalty", 2.0)  # Penalty for repeti
 length_penalty = config.get("length_penalty", 1.0)  # Length penalty in beam search
 early_stopping = config.get("early_stopping", True)  # Stop decoding early
 
-job_nb = sys.argv[1]
-
 
 NUM_PROCS = os.cpu_count() 
 print("NUM_PROCS = " ,NUM_PROCS)
@@ -39,6 +38,7 @@ print("NUM_PROCS = " ,NUM_PROCS)
 
 # Return acurate score
 rouge = evaluate.load('rouge')
+scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
 
 
 dataset = load_dataset("csv", data_files="./results_6419201_len_and_txt/len_and_txt.csv")["train"]
@@ -46,7 +46,7 @@ dataset = load_dataset("csv", data_files="./results_6419201_len_and_txt/len_and_
 # Define the evaluation function
 def evaluation(examples):
     """
-    Compute ROUGE scores for a batch of generated texts.
+    Compute ROUGE scores for a batch of generated texts with the rouge object from evaluate
     """
     generated_txt = examples["generated_txt"]  # List of generated summaries
     references = examples["references_txt"]  # List of reference summaries
@@ -65,9 +65,26 @@ def evaluation(examples):
     # Convert scalar values to lists
     return {key: [value] * len(generated_txt) for key, value in rouge_results.items()}
 
+scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
+
+# Define the evaluation function
+def evaluation_rouge_score(examples):
+    """
+    Compute ROUGE scores for a batch of generated texts withe the rouge object from rouge_score
+    """
+    generated_txt = examples["generated_txt"]  # List of generated summaries
+    references = examples["references_txt"]  # List of reference summaries
+
+    scores = scorer.score(generated_txt ,references)
+
+    return {
+        "rouge1": float(scores["rouge1"].fmeasure),
+        "rouge2": float(scores["rouge2"].fmeasure),
+        "rougeL": float(scores["rougeL"].fmeasure)
+    }
 
 # Apply evaluation with batch processing
-dataset = dataset.map(evaluation, batched=True,batch_size=1,num_proc=NUM_PROCS)
+dataset = dataset.map(evaluation_rouge_score, batched=False, num_proc=NUM_PROCS)
 
-dataset.to_pandas()[['id','rouge1', 'rouge2', 'rougeL', 'rougeLsum']].to_csv("./results_6419201_len_and_txt/rouge.csv",index=False)
-pd.DataFrame(dataset.to_pandas()[['rouge1', 'rouge2', 'rougeL', 'rougeLsum']].mean(axis=0)).transpose().to_csv("./results_6419201_len_and_txt/total_rouge.csv",index=False)
+dataset.to_pandas()[['id','rouge1', 'rouge2', 'rougeL']].to_csv("./results_6419201_len_and_txt/rouge_score.csv",index=False)
+pd.DataFrame(dataset.to_pandas()[['rouge1', 'rouge2', 'rougeL']].mean(axis=0)).transpose().to_csv("./results_6419201_len_and_txt/total_rouge_score.csv",index=False)
