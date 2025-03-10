@@ -1,0 +1,11 @@
+num_proc must be <= 20. Reducing num_proc to 20 for dataset of size 20.
+Map (num_proc=20):   0%|          | 0/20 [00:00<?, ? examples/s]Token indices sequence length is longer than the specified maximum sequence length for this model (1126 > 1024). Running this sequence through the model will result in indexing errors
+Token indices sequence length is longer than the specified maximum sequence length for this model (1149 > 1024). Running this sequence through the model will result in indexing errors
+Token indices sequence length is longer than the specified maximum sequence length for this model (1147 > 1024). Running this sequence through the model will result in indexing errors
+Token indices sequence length is longer than the specified maximum sequence length for this model (1294 > 1024). Running this sequence through the model will result in indexing errors
+Token indices sequence length is longer than the specified maximum sequence length for this model (1212 > 1024). Running this sequence through the model will result in indexing errors
+Token indices sequence length is longer than the specified maximum sequence length for this model (1666 > 1024). Running this sequence through the model will result in indexing errors
+Token indices sequence length is longer than the specified maximum sequence length for this model (1639 > 1024). Running this sequence through the model will result in indexing errors
+Token indices sequence length is longer than the specified maximum sequence length for this model (1647 > 1024). Running this sequence through the model will result in indexing errors
+Map (num_proc=20):   5%|▌         | 1/20 [00:00<00:02,  8.86 examples/s]Map (num_proc=20): 100%|██████████| 20/20 [00:00<00:00, 86.12 examples/s]
+total iter: 1: 0 iter [00:00, ? iter/s]total iter: 1: 1 iter [02:09, 129.65s/ iter]total iter: 1: 1 iter [02:09, 129.80s/ iter]

@@ -4,17 +4,17 @@
 #SBATCH --output=./outputslurm/job_%j/%x                       # output logs
 #SBATCH --error=./outputslurm/job_%j/%x.err                     # error logs
 #SBATCH --qos=short
-#SBATCH --time=20:00:00                                       # maximum wall time allocated for the job (D-H:MM:SS)
+#SBATCH --time=2:00:00                                       # maximum wall time allocated for the job (D-H:MM:SS)
 
 ## CPU allocation
-#SBATCH --cpus-per-task=50
 #SBATCH --nodes=1
 #SBATCH --mem=32G 
-#SBATCH --ntasks-per-node=1     
+#SBATCH --cpus-per-task=50
+# #SBATCH --ntasks-per-node=1     
 
 # GPU allocation
 #SBATCH --partition=gpu
-#SBATCH --gres=gpu:1                                            # Number of GPUs per node
+#SBATCH --gres=gpu:2                                            # Number of GPUs per node
 
 ## CONTACT
 #SBATCH --mail-user=i.botcazou@gmx.fr
@@ -31,7 +31,9 @@ micromamba activate torch_venv
 # Check GPU availability
 nvidia-smi || { echo "No GPU detected"; exit 1; }
 
-path_to_load='/LAB-DATA/GLiCID/users/ibotca@univ-angers.fr/datasets/cnn_dailymail_test'
+checkpoints_path=$SCRATCHDIRNAUTILUS/checkpoints/finetune_Bart_large/Bart-large-2025-03-07_12h44-6473173/
+config_path="./config_finetune_bart_large.json"
+results_path="./evaluations"
 
 # Programme à exécuter
-srun python CNN_processing_and_evaluation.py $SLURM_JOB_ID $path_to_load 
+srun python evaluate_bart_large_finetune_Data_parallel.py $SLURM_JOB_ID $checkpoints_path $config_path $results_path
