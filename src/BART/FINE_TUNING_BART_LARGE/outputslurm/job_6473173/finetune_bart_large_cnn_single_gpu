@@ -41,3 +41,7 @@ DatasetDict({
 1024
 <class 'transformers.models.bart.tokenization_bart_fast.BartTokenizerFast'>
 <class 'transformers.models.bart.modeling_bart.BartForConditionalGeneration'>
+Find a better model at the epoch 1 - Train Loss: 1.7016, eval Loss: 1.4288
+Find a better model at the epoch 2 - Train Loss: 1.5601, eval Loss: 1.4043
+Find a better model at the epoch 3 - Train Loss: 1.5051, eval Loss: 1.3989
+Find a better model at the epoch 4 - Train Loss: 1.4408, eval Loss: 1.3873
