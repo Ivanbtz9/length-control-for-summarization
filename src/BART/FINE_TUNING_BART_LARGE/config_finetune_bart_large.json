@@ -1,7 +1,7 @@
 {   
     "config_machine":{
         "SEED": 42,
-        "NUM_LOADER": 50,
+        "NUM_LOADER": 15,
         "BATCH_SIZE":8
     },
     "config_model":{

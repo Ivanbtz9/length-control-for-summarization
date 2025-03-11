@@ -6,15 +6,13 @@
 #SBATCH --qos=short
 #SBATCH --time=2:00:00                                       # maximum wall time allocated for the job (D-H:MM:SS)
 
-## CPU allocation
+### CPU allocation
 #SBATCH --nodes=1
 #SBATCH --mem=32G 
-#SBATCH --cpus-per-task=50
-# #SBATCH --ntasks-per-node=1     
 
 # GPU allocation
 #SBATCH --partition=gpu
-#SBATCH --gres=gpu:2                                            # Number of GPUs per node
+#SBATCH --gres=gpu:2         # number of GPUs reserved per node (here 4, or all the GPUs)
 
 ## CONTACT
 #SBATCH --mail-user=i.botcazou@gmx.fr

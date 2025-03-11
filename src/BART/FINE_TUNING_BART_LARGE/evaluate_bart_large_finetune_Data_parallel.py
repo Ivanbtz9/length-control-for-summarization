@@ -43,7 +43,6 @@ print("NUM_PROCS = " ,NUM_PROCS)
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-torch.cuda.init()
 print("device = " , device)
 
 # Set random seeds and deterministic pytorch for reproducibility
@@ -71,10 +70,14 @@ model = BartForConditionalGeneration.from_pretrained(checkpoints_path)
 print("max_position_embeddings = " , model.config.max_position_embeddings) 
 
 if torch.cuda.device_count() > 1:
-  print("Let's use", torch.cuda.device_count(), "GPUs!")
-  model = nn.DataParallel(model)
+    print("Let's use", torch.cuda.device_count(), "GPUs!")
+    model = nn.DataParallel(model.to(device))
+else:
+    print("Exit because there is only ", torch.cuda.device_count(), "GPU!")
+    sys.exit()
 
-model.to(device)
+
+
 
 # Load dataset (e.g., CNN/DailyMail)
 dataset = load_dataset("cnn_dailymail", "3.0.0", split='test')
@@ -186,7 +189,7 @@ with torch.no_grad():
     
     for _, batch in tqdm.tqdm(enumerate(loader, 0),desc=f'total iter: {len(loader)}', unit=" iter"):
 
-        generated_ids = model.generate(
+        generated_ids = model.module.generate(
               input_ids = batch["input_ids"].to(device),
               attention_mask = batch["attention_mask"].to(device),            
               **config['config_generate']
