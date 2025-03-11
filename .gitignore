@@ -172,10 +172,12 @@ cython_debug/
 
 #model weights
 models_checkpoints/
+checkpoints/
 
 # data set load localy
 data/
 *.csv
+
 
 # config folder of the IDE editor 
 .vscode/
@@ -184,3 +186,4 @@ data/
 #logs
 logs/
 log/
+test/
