@@ -12,7 +12,7 @@
 
 # GPU allocation
 #SBATCH --partition=gpu
-#SBATCH --gres=gpu:2         # number of GPUs reserved per node (here 4, or all the GPUs)
+#SBATCH --gres=gpu:1        # number of GPUs reserved per node (here 4, or all the GPUs)
 
 ## CONTACT
 #SBATCH --mail-user=i.botcazou@gmx.fr
@@ -34,4 +34,4 @@ config_path="./config_finetune_bart_large.json"
 results_path="./evaluations"
 
 # Programme à exécuter
-srun python evaluate_bart_large_finetune_Data_parallel.py $SLURM_JOB_ID $checkpoints_path $config_path $results_path
+srun python evaluate_bart_large_finetune.py $SLURM_JOB_ID $checkpoints_path $config_path $results_path
