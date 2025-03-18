@@ -1,0 +1,5 @@
+{
+    "SEED": 42,
+    "NUM_LOADER": 50,
+    "BATCH_SIZE": 16
+}

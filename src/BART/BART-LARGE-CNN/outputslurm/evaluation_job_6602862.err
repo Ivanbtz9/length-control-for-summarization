@@ -1,0 +1,4 @@
+srun: error: CPU binding outside of job step allocation, allocated CPUs are: 0x03F03F03F07F3DF03F020FF8.
+srun: error: Task launch for StepId=6602862.0 failed on node gnode2: Unable to satisfy cpu bind request
+srun: error: Application launch failed: Unable to satisfy cpu bind request
+srun: Job step aborted

@@ -24,7 +24,7 @@ from transformers import AutoTokenizer, BartForConditionalGeneration
 ### CONFIG ###
 
 # Load configuration from JSON
-with open('./config.json', 'r') as f:
+with open('./config_base.json', 'r') as f:
     config = json.load(f)
     #print(config)
     #print(type(config))
@@ -34,14 +34,14 @@ with open('./config.json', 'r') as f:
 SEED = config.get("SEED", 0)  # Random seed
 NUM_LOADER = config.get("NUM_LOADER", 50)  # Number of threads
 BATCH_SIZE = config.get("BATCH_SIZE", 64)
-NUM_BEAM = config.get("NUM_BEAM", 4)
+# NUM_BEAM = config.get("NUM_BEAM", 4)
 
-max_len = config.get("max_len", 1024)  # Max input length for encoder
-max_len_resume = config.get("max_len_resume", 200)  # Max summary length
-min_len_resume = config.get("min_len_resume", 55)  # Max summary length
-repetition_penalty = config.get("repetition_penalty", 2.0)  # Penalty for repetitive text
-length_penalty = config.get("length_penalty", 1.0)  # Length penalty in beam search
-early_stopping = config.get("early_stopping", True)  # Stop decoding early
+# max_len = config.get("max_len", 1024)  # Max input length for encoder
+# max_len_resume = config.get("max_len_resume", 200)  # Max summary length
+# min_len_resume = config.get("min_len_resume", 55)  # Max summary length
+# repetition_penalty = config.get("repetition_penalty", 2.0)  # Penalty for repetitive text
+# length_penalty = config.get("length_penalty", 1.0)  # Length penalty in beam search
+# early_stopping = config.get("early_stopping", True)  # Stop decoding early
 
 job_nb = sys.argv[1]
 #path_to_load =  sys.argv[2] #'/LAB-DATA/GLiCID/users/ibotca@univ-angers.fr/datasets/cnn_dailymail_train'
@@ -51,7 +51,7 @@ results_dir = f"./results_{job_nb}"  # Ensure correct naming
 os.makedirs(results_dir, exist_ok=True)
 
 # Save configuration to the correct directory
-config_path = os.path.join(results_dir, "config.json")
+config_path = os.path.join(results_dir, "config_base.json")
 with open(config_path, 'w') as f:
     json.dump(config, f, indent=4)
 
@@ -82,7 +82,10 @@ print("max_position_embeddings = " , model.config.max_position_embeddings)
 
 # Load dataset (e.g., CNN/DailyMail)
 dataset = load_dataset("cnn_dailymail", "3.0.0", split='test')
+# dataset = dataset.shuffle(SEED).select(range(10))
 
+# print(model.config.task_specific_params["summarization"])
+# sys.exit()
 
 def len_distrib(batch):
 
@@ -97,8 +100,8 @@ def len_distrib(batch):
         len_highlights.append(len(tokenizer(highlight, truncation=False)["input_ids"]))
 
 
-    source = tokenizer(batch["article"],truncation=True, max_length=max_len)
-    resume = tokenizer(batch["highlights"],truncation=True, max_length=max_len)
+    source = tokenizer(batch["article"],truncation=True, max_length=model.config.max_position_embeddings)
+    resume = tokenizer(batch["highlights"],truncation=True, max_length=model.config.max_position_embeddings)
 
     return {
         'input_ids': source['input_ids'], 
@@ -149,8 +152,6 @@ def collate_fn(batch):
 
     highlights = [item['highlights'] for item in batch]
 
-    
-    
 
     return {
         'id':id,
@@ -184,9 +185,9 @@ with open(f'./results_{job_nb}/rouge.csv', 'w', newline='') as file:
     field = ["rouge1", "rouge2", "rougeL"]
     writer.writerow(field)
 
-with open(f'./results_{job_nb}/len.csv', 'w', newline='') as file:
+with open(f'./results_{job_nb}/len_and_txt.csv', 'w', newline='') as file:
     writer = csv.writer(file)
-    field = ["id", "input_len", "target_len", "generate_len"]
+    field = ["id", "input_len", "target_len", "generate_len", "target_txt", "generate_txt"]
     writer.writerow(field)
 
 model.eval()
@@ -197,42 +198,44 @@ nb_sample = 0
 
 exclude_ids = torch.tensor([0, 1, 2, 3, 50264]).to(device) #spécial token to skip
 
-
 with torch.no_grad():
     
     for _, batch in tqdm.tqdm(enumerate(loader, 0),desc=f'total iter: {len(loader)}', unit=" iter"):
 
         generated_ids = model.generate(
               input_ids = batch["input_ids"].to(device),
-              attention_mask = batch["attention_mask"].to(device),            
-              num_beams=NUM_BEAM,
-              max_length=max_len_resume, 
-              min_length =min_len_resume, 
-              repetition_penalty=repetition_penalty, 
-              length_penalty=length_penalty, 
-              early_stopping=early_stopping
-              )   
+              attention_mask = batch["attention_mask"].to(device),
+              **model.config.task_specific_params["summarization"])
+                  
+            #   num_beams=NUM_BEAM,
+            #   max_length=max_len_resume, 
+            #   min_length =min_len_resume, 
+            #   repetition_penalty=repetition_penalty, 
+            #   length_penalty=length_penalty, 
+            #   early_stopping=early_stopping
+            #   )   
         #print(generated_ids)
+        generated_txt = [text.lower().strip() for text in tokenizer.batch_decode(generated_ids, skip_special_tokens=True)]
+        references = [ref.lower().strip() for ref in batch["highlights"]]
         #print(generated_txt)
         #print(type(generated_txt))
 
         mask = ~torch.isin(generated_ids, exclude_ids) #mask to skip the special tokens 
         generate_len = mask.sum(dim=1)  
 
-        with open(f'./results_{job_nb}/len.csv', 'a', newline='') as file:
+        with open(f'./results_{job_nb}/len_and_txt.csv', 'a', newline='') as file:
             writer = csv.writer(file)
     
             min_len = min(len(batch["id"]), len(generate_len))
 
             for i in range(min_len):
                 try:
-                    writer.writerow([batch["id"][i], batch["input_len"][i], batch["target_len"][i], generate_len[i].item()])
+                    writer.writerow([batch["id"][i],batch["input_len"][i],batch["target_len"][i],generate_len[i].item(), references[i], generated_txt[i]])
                 except Exception as e:
                     print(f"Error writing row {i}: {e}")
                     
         # Compute ROUGE scores here
-        generated_txt = [text.lower().strip() for text in tokenizer.batch_decode(generated_ids, skip_special_tokens=True)]
-        references = [ref.lower().strip() for ref in batch["highlights"]]
+        
         rouge_results = rouge.compute(predictions=generated_txt,
                                       references=references,
                                       use_stemmer=True  # Ensures correct ROUGE comparison
