@@ -91,9 +91,9 @@ class RepilotBartForConditionalGeneration(BartForConditionalGeneration):
             logger.debug(f"Shape of reversed_position_input {reversed_position_input.shape}")
 
         else:
-            for k in range(decoder_input_ids.size(-1)):
-                reversed_position_input[:,k] = F.relu(target_len -k)
-                logger.debug(f"reversed_position_input[:,{k}] {reversed_position_input[:,k]}")
+            k = torch.arange(decoder_input_ids.size(-1), device=target_len.device)  # Create a tensor [0, 1, 2, ..., seq_len-1]
+            reversed_position_input = F.relu(target_len.unsqueeze(1) - k)  # Broadcast subtraction over all positions
+            logger.debug(f"reversed_position_input shape {reversed_position_input.shape}")
 
         if gaussian_noise:
             normal_round = torch.randn(reversed_position_input.shape) * mask
